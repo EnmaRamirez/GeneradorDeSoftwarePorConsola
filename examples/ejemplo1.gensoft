@@ -1,0 +1,14 @@
+proyecto MiTienda tipo web {
+    modulo usuarios {
+        campo nombre: string;
+        campo edad: entero;
+        campo activo: booleano;
+    }
+
+    modulo productos {
+        campo titulo: string;
+        campo precio: decimal;
+    }
+}
+
+generar MiTienda;

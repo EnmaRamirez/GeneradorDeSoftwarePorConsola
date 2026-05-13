@@ -1,34 +1,45 @@
 # test_semantic_optimizer.py
-# Prueba básica del analizador semántico y optimizador
+# Prueba del analizador semántico con el árbol real de ANTLR4
 
+from lexer.lexer_wrapper import analizar_archivo
 from semantic.analyzer import SemanticAnalyzer
 from optimizer.optimizer import Optimizer
 
-# AST de prueba simulando lo que vendría del Parser
-ast_prueba = {
-    "name": "MiProyecto",
-    "language": "Python",
-    "framework": "FastAPI",
-    "version": "1.0.0",
-    "dependencies": ["fastapi", "uvicorn", "fastapi"]
-}
-
 print("=" * 50)
-print("ANÁLISIS SEMÁNTICO")
+print("PRUEBA CON ejemplo1.gensoft")
 print("=" * 50)
 
-analyzer = SemanticAnalyzer()
-resultado = analyzer.analyze(ast_prueba)
-analyzer.report()
+# Paso 1: Lexer + Parser
+resultado = analizar_archivo("examples/ejemplo1.gensoft")
 
-print("\n" + "=" * 50)
-print("OPTIMIZADOR")
-print("=" * 50)
+if not resultado.exitoso:
+    print("Errores en Lexer/Parser:")
+    for err in resultado.errores:
+        print(f"  {err}")
+else:
+    print("Lexer/Parser sin errores.\n")
 
-optimizer = Optimizer()
-ast_optimizado = optimizer.optimize(ast_prueba)
-optimizer.report(ast_prueba, ast_optimizado)
+    # Paso 2: Análisis Semántico
+    print("=" * 50)
+    print("ANÁLISIS SEMÁNTICO")
+    print("=" * 50)
+    analyzer = SemanticAnalyzer()
+    analyzer.analyze(resultado.arbol)
+    analyzer.report()
 
-print("\n AST Final:")
-for key, value in ast_optimizado.items():
-    print(f"  {key}: {value}")
+    # Paso 3: Optimizador con datos extraídos del árbol
+    print("\n" + "=" * 50)
+    print("⚡ OPTIMIZADOR")
+    print("=" * 50)
+
+    ast_dict = {
+        "proyectos": analyzer.proyectos_declarados,
+        "a_generar": analyzer.proyectos_a_generar,
+        "language": "Python",
+        "framework": "FastAPI",
+        "dependencies": ["antlr4-python3-runtime", "typer", "antlr4-python3-runtime"]
+    }
+
+    optimizer = Optimizer()
+    ast_optimizado = optimizer.optimize(ast_dict)
+    optimizer.report(ast_dict, ast_optimizado)

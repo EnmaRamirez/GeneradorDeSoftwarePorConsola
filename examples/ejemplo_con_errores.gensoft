@@ -1,0 +1,12 @@
+proyecto MiTienda tipo movil {
+    modulo usuarios {
+        campo nombre string;
+        campo edad: int;
+    }
+
+    modulo @ {
+        campo titulo: string;
+    }
+}
+
+generar

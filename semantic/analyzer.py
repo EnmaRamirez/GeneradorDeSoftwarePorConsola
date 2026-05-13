@@ -1,6 +1,9 @@
 # semantic/analyzer.py
-# Analizador semántico del compilador .scf
+# Analizador semántico del compilador .scf - compatible con árbol ANTLR4
 
+from antlr4 import ParserRuleContext
+from antlr4.tree.Tree import TerminalNode
+from grammar.generated.GenSoftParser import GenSoftParser
 from semantic.errors import (
     DuplicateBlockError,
     InvalidValueError,
@@ -8,92 +11,118 @@ from semantic.errors import (
     UnknownFrameworkError
 )
 
-# Valores permitidos por campo
-VALID_LANGUAGES = ["python", "javascript", "typescript", "java"]
-VALID_FRAMEWORKS = {
-    "python": ["fastapi", "flask", "django"],
-    "javascript": ["express", "react", "vue", "vanilla"],
-    "typescript": ["express", "react", "angular", "nestjs"],
-    "java": ["spring", "springboot"]
-}
-REQUIRED_FIELDS = ["name", "language", "framework"]
+TIPOS_VALIDOS = ["string", "entero", "decimal", "booleano"]
+TIPOS_PROYECTO = ["web", "consola", "api"]
 
 
 class SemanticAnalyzer:
     """
-    Recibe el AST del Parser y valida que sea semánticamente correcto.
+    Recibe el árbol ANTLR4 y valida que sea semánticamente correcto.
     """
 
     def __init__(self):
         self.errors = []
         self.warnings = []
+        self.proyectos_declarados = []
+        self.proyectos_a_generar = []
 
-    def analyze(self, ast: dict) -> bool:
-        """
-        Analiza el AST. Retorna True si no hay errores, False si los hay.
-        """
+    def analyze(self, arbol: ParserRuleContext) -> bool:
         self.errors = []
         self.warnings = []
+        self.proyectos_declarados = []
+        self.proyectos_a_generar = []
 
-        self._check_required_fields(ast)
-        self._check_duplicate_blocks(ast)
-        self._check_valid_language(ast)
-        self._check_valid_framework(ast)
+        self._recorrer(arbol)
+        self._check_generar_existe()
 
         return len(self.errors) == 0
 
-    def _check_required_fields(self, ast: dict):
-        """Verifica que estén todos los campos obligatorios"""
-        for field in REQUIRED_FIELDS:
-            if field not in ast:
-                self.errors.append(
-                    MissingRequiredFieldError(f"El campo obligatorio '{field}' no está definido.")
-                )
+    def _recorrer(self, nodo):
+        """Recorre el árbol y valida cada nodo."""
+        if isinstance(nodo, GenSoftParser.DeclaracionProyectoContext):
+            self._check_proyecto(nodo)
+        elif isinstance(nodo, GenSoftParser.ComandoGenerarContext):
+            self._check_comando_generar(nodo)
 
-    def _check_duplicate_blocks(self, ast: dict):
-        """Verifica que no haya bloques duplicados"""
-        seen = []
-        for key in ast.keys():
-            if key in seen:
-                self.errors.append(
-                    DuplicateBlockError(f"El bloque '{key}' está duplicado.")
-                )
-            seen.append(key)
+        for i in range(nodo.getChildCount()):
+            hijo = nodo.getChild(i)
+            if not isinstance(hijo, TerminalNode):
+                self._recorrer(hijo)
 
-    def _check_valid_language(self, ast: dict):
-        """Verifica que el lenguaje sea válido"""
-        language = ast.get("language", "").lower()
-        if language and language not in VALID_LANGUAGES:
+    def _check_proyecto(self, nodo: GenSoftParser.DeclaracionProyectoContext):
+        """Valida un bloque proyecto."""
+        nombre = nodo.ID().getText()
+
+        # Verificar proyectos duplicados
+        if nombre in self.proyectos_declarados:
             self.errors.append(
-                InvalidValueError(
-                    f"El lenguaje '{language}' no es válido. "
-                    f"Opciones: {', '.join(VALID_LANGUAGES)}"
-                )
+                DuplicateBlockError(f"El proyecto '{nombre}' está declarado más de una vez.")
             )
+        else:
+            self.proyectos_declarados.append(nombre)
 
-    def _check_valid_framework(self, ast: dict):
-        """Verifica que el framework sea válido para el lenguaje dado"""
-        language = ast.get("language", "").lower()
-        framework = ast.get("framework", "").lower()
-
-        if language and framework:
-            allowed = VALID_FRAMEWORKS.get(language, [])
-            if framework not in allowed:
+        # Verificar módulos duplicados dentro del proyecto
+        nombres_modulos = []
+        for modulo in nodo.modulo():
+            nombre_modulo = modulo.ID().getText()
+            if nombre_modulo in nombres_modulos:
                 self.errors.append(
-                    UnknownFrameworkError(
-                        f"El framework '{framework}' no es válido para '{language}'. "
-                        f"Opciones: {', '.join(allowed)}"
+                    DuplicateBlockError(
+                        f"El módulo '{nombre_modulo}' está duplicado en el proyecto '{nombre}'."
+                    )
+                )
+            else:
+                nombres_modulos.append(nombre_modulo)
+                self._check_modulo(modulo, nombre)
+
+    def _check_modulo(self, nodo: GenSoftParser.ModuloContext, nombre_proyecto: str):
+        """Valida los campos dentro de un módulo."""
+        nombre_modulo = nodo.ID().getText()
+        nombres_campos = []
+
+        for campo in nodo.campo():
+            nombre_campo = campo.ID().getText()
+            tipo = campo.tipoDato().getText()
+
+            # Verificar campos duplicados
+            if nombre_campo in nombres_campos:
+                self.errors.append(
+                    DuplicateBlockError(
+                        f"El campo '{nombre_campo}' está duplicado en el módulo '{nombre_modulo}'."
+                    )
+                )
+            else:
+                nombres_campos.append(nombre_campo)
+
+            # Verificar tipo de dato válido
+            if tipo not in TIPOS_VALIDOS:
+                self.errors.append(
+                    InvalidValueError(
+                        f"El tipo '{tipo}' no es válido en '{nombre_modulo}.{nombre_campo}'. "
+                        f"Tipos permitidos: {', '.join(TIPOS_VALIDOS)}"
+                    )
+                )
+
+    def _check_comando_generar(self, nodo: GenSoftParser.ComandoGenerarContext):
+        """Registra los proyectos que se quieren generar."""
+        nombre = nodo.ID().getText()
+        self.proyectos_a_generar.append(nombre)
+
+    def _check_generar_existe(self):
+        """Verifica que el proyecto a generar esté declarado."""
+        for nombre in self.proyectos_a_generar:
+            if nombre not in self.proyectos_declarados:
+                self.errors.append(
+                    MissingRequiredFieldError(
+                        f"El comando 'generar {nombre}' hace referencia a un proyecto no declarado."
                     )
                 )
 
     def report(self):
-        """Imprime el reporte de errores y advertencias"""
         if not self.errors and not self.warnings:
             print("Análisis semántico completado sin errores.")
             return
-
         for error in self.errors:
             print(f"{error}")
-
         for warning in self.warnings:
             print(f"{warning}")
