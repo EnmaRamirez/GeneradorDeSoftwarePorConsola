@@ -13,6 +13,8 @@ El sistema permite generar automáticamente estructuras base de proyectos de sof
 ---
 
 ## Estructura del proyecto
+
+```
 GeneradorDeSoftwarePorConsola/
 │
 ├── semantic/
@@ -28,6 +30,7 @@ GeneradorDeSoftwarePorConsola/
 │
 ├── requirements.txt
 └── README.md
+```
 
 ---
 
