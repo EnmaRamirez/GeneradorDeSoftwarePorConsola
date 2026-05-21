@@ -1,5 +1,5 @@
 # semantic/analyzer.py
-# Analizador semántico del compilador .scf - compatible con árbol ANTLR4
+# Analizador semántico del compilador .gensoft - compatible con árbol ANTLR4
 
 from antlr4 import ParserRuleContext
 from antlr4.tree.Tree import TerminalNode
@@ -51,6 +51,12 @@ class SemanticAnalyzer:
 
     def _check_proyecto(self, nodo: GenSoftParser.DeclaracionProyectoContext):
         """Valida un bloque proyecto."""
+        if nodo.ID() is None:
+            self.errors.append(
+                MissingRequiredFieldError("Un proyecto no tiene nombre definido.")
+            )
+            return
+
         nombre = nodo.ID().getText()
 
         # Verificar proyectos duplicados
@@ -64,6 +70,11 @@ class SemanticAnalyzer:
         # Verificar módulos duplicados dentro del proyecto
         nombres_modulos = []
         for modulo in nodo.modulo():
+            if modulo.ID() is None:
+                self.errors.append(
+                    MissingRequiredFieldError(f"Un módulo en '{nombre}' no tiene nombre definido.")
+                )
+                continue
             nombre_modulo = modulo.ID().getText()
             if nombre_modulo in nombres_modulos:
                 self.errors.append(
@@ -81,6 +92,8 @@ class SemanticAnalyzer:
         nombres_campos = []
 
         for campo in nodo.campo():
+            if campo.ID() is None or campo.tipoDato() is None:
+                continue
             nombre_campo = campo.ID().getText()
             tipo = campo.tipoDato().getText()
 
@@ -105,6 +118,13 @@ class SemanticAnalyzer:
 
     def _check_comando_generar(self, nodo: GenSoftParser.ComandoGenerarContext):
         """Registra los proyectos que se quieren generar."""
+        if nodo.ID() is None:
+            self.errors.append(
+                MissingRequiredFieldError(
+                    "El comando 'generar' no tiene un nombre de proyecto."
+                )
+            )
+            return
         nombre = nodo.ID().getText()
         self.proyectos_a_generar.append(nombre)
 
@@ -120,9 +140,9 @@ class SemanticAnalyzer:
 
     def report(self):
         if not self.errors and not self.warnings:
-            print("Análisis semántico completado sin errores.")
+            print(" Análisis semántico completado sin errores.")
             return
         for error in self.errors:
-            print(f"{error}")
+            print(f" {error}")
         for warning in self.warnings:
-            print(f"{warning}")
+            print(f"  {warning}")

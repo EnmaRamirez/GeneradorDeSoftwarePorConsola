@@ -43,3 +43,19 @@ else:
     optimizer = Optimizer()
     ast_optimizado = optimizer.optimize(ast_dict)
     optimizer.report(ast_dict, ast_optimizado)
+
+print("\n" + "=" * 50)
+print(" PRUEBA CON ejemplo_con_errores.gensoft")
+print("=" * 50)
+
+resultado_errores = analizar_archivo("examples/ejemplo_con_errores.gensoft")
+
+if not resultado_errores.exitoso:
+    print(f" Errores en Lexer/Parser: {len(resultado_errores.errores)}")
+    for err in resultado_errores.errores:
+        print(f"  {err}")
+    print("\n⚠️  El árbol puede estar incompleto, analizando semántica de todas formas...\n")
+
+analyzer2 = SemanticAnalyzer()
+analyzer2.analyze(resultado_errores.arbol)
+analyzer2.report()
