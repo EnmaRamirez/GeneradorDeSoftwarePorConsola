@@ -1,8 +1,11 @@
+# Python
 venv/
 __pycache__/
 *.pyc
 dist/
 build/
 *.egg-info/
+
+# ANTLR
 tools/antlr4.jar
 .antlr/
