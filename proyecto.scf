@@ -1,0 +1,20 @@
+project TiendaOnline
+
+folders:
+controllers
+models
+routes
+templates
+static
+
+files:
+app.py
+requirements.txt
+Dockerfile
+README.md
+
+models:
+model Product:
+    id:int
+    nombre:string
+    precio:float
