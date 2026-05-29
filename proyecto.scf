@@ -18,3 +18,10 @@ model Product:
     id:int
     nombre:string
     precio:float
+
+files:
+app.py
+requirements.txt
+Dockerfile
+.dockerignore
+README.md
