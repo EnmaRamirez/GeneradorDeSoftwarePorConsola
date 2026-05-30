@@ -41,8 +41,8 @@ else:
     }
 
     optimizer = Optimizer()
-    ast_optimizado = optimizer.optimize(ast_dict)
-    optimizer.report(ast_dict, ast_optimizado)
+    ast_optimizado, optimization_stats = optimizer.optimize(ast_dict)
+    optimizer.report(ast_dict, ast_optimizado, optimization_stats)
 
 print("\n" + "=" * 50)
 print(" PRUEBA CON ejemplo_con_errores.gensoft")

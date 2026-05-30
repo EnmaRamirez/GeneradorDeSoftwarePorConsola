@@ -1,4 +1,4 @@
-# Generated from grammar/GenSoft.g4 by ANTLR 4.13.2
+# Generated from GenSoft.g4 by ANTLR 4.13.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -123,12 +123,6 @@ class GenSoftParser ( Parser ):
             if hasattr( listener, "exitPrograma" ):
                 listener.exitPrograma(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitPrograma" ):
-                return visitor.visitPrograma(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -187,12 +181,6 @@ class GenSoftParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitSentencia" ):
                 listener.exitSentencia(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitSentencia" ):
-                return visitor.visitSentencia(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -271,12 +259,6 @@ class GenSoftParser ( Parser ):
             if hasattr( listener, "exitDeclaracionProyecto" ):
                 listener.exitDeclaracionProyecto(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitDeclaracionProyecto" ):
-                return visitor.visitDeclaracionProyecto(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -345,12 +327,6 @@ class GenSoftParser ( Parser ):
             if hasattr( listener, "exitTipoProyecto" ):
                 listener.exitTipoProyecto(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTipoProyecto" ):
-                return visitor.visitTipoProyecto(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -413,12 +389,6 @@ class GenSoftParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitModulo" ):
                 listener.exitModulo(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitModulo" ):
-                return visitor.visitModulo(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 
@@ -491,12 +461,6 @@ class GenSoftParser ( Parser ):
             if hasattr( listener, "exitCampo" ):
                 listener.exitCampo(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitCampo" ):
-                return visitor.visitCampo(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -555,12 +519,6 @@ class GenSoftParser ( Parser ):
             if hasattr( listener, "exitTipoDato" ):
                 listener.exitTipoDato(self)
 
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitTipoDato" ):
-                return visitor.visitTipoDato(self)
-            else:
-                return visitor.visitChildren(self)
-
 
 
 
@@ -613,12 +571,6 @@ class GenSoftParser ( Parser ):
         def exitRule(self, listener:ParseTreeListener):
             if hasattr( listener, "exitComandoGenerar" ):
                 listener.exitComandoGenerar(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitComandoGenerar" ):
-                return visitor.visitComandoGenerar(self)
-            else:
-                return visitor.visitChildren(self)
 
 
 

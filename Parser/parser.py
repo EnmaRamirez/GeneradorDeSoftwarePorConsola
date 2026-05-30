@@ -227,3 +227,7 @@ def parse_source(source_code):
     ast = parser.parse()
 
     return ast
+
+
+# Alias para compatibilidad con el CLI actual.
+Parser = SimpleParser
