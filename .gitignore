@@ -1,14 +1,32 @@
 # Python
+
 venv/
+.venv/
+
 __pycache__/
 *.pyc
+
 dist/
-build/venv/
-__pycache__/
-*.pyc
 build/
 *.egg-info/
 
+# Pytest
+
+.pytest_cache/
+
+# Carpetas generadas
+
+MiProyecto/
+salida/
+salida_test/
+salida_test2/
+temp_build_output/
+temp_build_output_plural_test/
+
 # ANTLR
-tools/antlr4.jar
+
 .antlr/
+
+# Logs
+
+*.log

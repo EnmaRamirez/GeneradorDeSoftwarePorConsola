@@ -1,4 +1,4 @@
-# optimizer/rules.py
+﻿# optimizer/rules.py
 # Reglas de optimización aplicadas al AST
 
 class OptimizationRule:
@@ -6,8 +6,8 @@ class OptimizationRule:
     name = "base_rule"
     description = "Regla base"
 
-    def apply(self, ast: dict) -> dict:
-        return ast
+    def apply(self, ast: dict) -> tuple[dict, dict]:
+        return ast, {}
 
 
 class NormalizeValuesRule(OptimizationRule):
@@ -18,14 +18,32 @@ class NormalizeValuesRule(OptimizationRule):
     name = "normalize_values"
     description = "Normaliza todos los valores de texto a minúsculas"
 
-    def apply(self, ast: dict) -> dict:
+    def apply(self, ast: dict) -> tuple[dict, dict]:
         optimized = {}
+        normalized = 0
         for key, value in ast.items():
             if isinstance(value, str):
-                optimized[key] = value.lower().strip()
+                if key in {"name", "type"}:
+                    optimized[key] = value
+                else:
+                    normalized_value = value.lower().strip()
+                    optimized[key] = normalized_value
+                    if normalized_value != value:
+                        normalized += 1
+            elif isinstance(value, list) and key == "dependencies":
+                normalized_list = []
+                for dep in value:
+                    if isinstance(dep, str):
+                        dep_normalized = dep.lower().strip()
+                        normalized_list.append(dep_normalized)
+                        if dep_normalized != dep:
+                            normalized += 1
+                    else:
+                        normalized_list.append(dep)
+                optimized[key] = normalized_list
             else:
                 optimized[key] = value
-        return optimized
+        return optimized, {"normalized_values": normalized}
 
 
 class RemoveDuplicateDependenciesRule(OptimizationRule):
@@ -36,14 +54,15 @@ class RemoveDuplicateDependenciesRule(OptimizationRule):
     name = "remove_duplicate_dependencies"
     description = "Elimina dependencias duplicadas en la lista de paquetes"
 
-    def apply(self, ast: dict) -> dict:
+    def apply(self, ast: dict) -> tuple[dict, dict]:
         optimized = ast.copy()
+        removed = 0
         if "dependencies" in optimized:
             original = optimized["dependencies"]
-            optimized["dependencies"] = list(dict.fromkeys(original))
-            if len(original) != len(optimized["dependencies"]):
-                print(f"⚡ Dependencias duplicadas eliminadas: {len(original) - len(optimized['dependencies'])} removidas")
-        return optimized
+            deduped = list(dict.fromkeys(original))
+            removed = len(original) - len(deduped)
+            optimized["dependencies"] = deduped
+        return optimized, {"removed_duplicates": removed}
 
 
 class SetDefaultValuesRule(OptimizationRule):
@@ -61,10 +80,11 @@ class SetDefaultValuesRule(OptimizationRule):
         "output": "./output"
     }
 
-    def apply(self, ast: dict) -> dict:
+    def apply(self, ast: dict) -> tuple[dict, dict]:
         optimized = ast.copy()
+        added = []
         for field, default in self.DEFAULTS.items():
             if field not in optimized:
                 optimized[field] = default
-                print(f" Valor por defecto asignado: '{field}' = '{default}'")
-        return optimized
+                added.append(field)
+        return optimized, {"defaults_added": added}
