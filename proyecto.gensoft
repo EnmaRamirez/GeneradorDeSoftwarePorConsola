@@ -1,0 +1,9 @@
+proyecto MiProyecto tipo web {
+    modulo usuarios {
+        campo id: entero;
+        campo nombre: string;
+        campo activo: booleano;
+    }
+}
+
+generar MiProyecto;
